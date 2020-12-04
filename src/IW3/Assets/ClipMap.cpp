@@ -48,7 +48,7 @@ namespace ZoneTool
 
 			iw4_clipmap->numCBrushSides = (int)asset->numBrushSides;
 			iw4_clipmap->cBrushSides = mem->Alloc<IW4::cbrushside_t>(iw4_clipmap->numCBrushSides);
-			for (unsigned int i = 0; i < asset->numStaticModels; ++i)
+			for (unsigned int i = 0; i < asset->numBrushSides; ++i)
 			{
 				iw4_clipmap->cBrushSides[i].plane = (IW4::cplane_s*)asset->brushsides[i].plane;
 				iw4_clipmap->cBrushSides[i].materialNum = asset->brushsides[i].materialNum;

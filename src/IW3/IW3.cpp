@@ -72,7 +72,7 @@ namespace ZoneTool
 			// todo
 			if (asset->type == image)
 			{
-				return asset->ptr.gfximage->name;
+				return asset->ptr.image->name;
 			}
 			if (asset->type == menu)
 			{
@@ -166,6 +166,7 @@ namespace ZoneTool
 				}
 				else
 				{
+					// DECLARE_ASSET(image, IGfxImage);
 					DECLARE_ASSET(xmodel, IXModel);
 					DECLARE_ASSET(material, IMaterial);
 					DECLARE_ASSET(xanim, IXAnimParts);
@@ -176,6 +177,7 @@ namespace ZoneTool
 					DECLARE_ASSET(gfx_map, IGfxWorld);
 					DECLARE_ASSET(col_map_mp, IClipMap);
 					DECLARE_ASSET(map_ents, IMapEnts);
+					DECLARE_ASSET(com_map, IComWorld);
 				}
 			}
 		}
@@ -251,6 +253,9 @@ namespace ZoneTool
 				Memory(0x4FFE37).call(Dedicated_RegisterDvarBool);
 				Memory(0x4FFE5D).call(Dedicated_RegisterDvarBool);
 
+				// Don't touch image data
+				Memory(0x616E9C).nop(3);
+				
 				// idc if you can't initialise PunkBuster
 				Memory(0x5776DF).nop(5);
 				Memory(0x5776EC).nop(5);

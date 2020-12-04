@@ -24,6 +24,7 @@
 #include "Assets/FxEffectDef.hpp"
 #include "Assets/ClipMap.hpp"
 #include "Assets/MapEnts.hpp"
+#include "Assets/ComWorld.hpp"
 
 // oh nee toch niet
 

@@ -1901,12 +1901,12 @@ namespace ZoneTool
 			// 			MaterialPixelShader *pixelShader;
 			// 			MaterialVertexShader *vertexShader;
 			MaterialTechniqueSet* techset;
-			GfxImage* gfximage;
+			GfxImage* image;
 			snd_alias_list_t *sound;
 			// 			SndCurve *sndCurve;
 			clipMap_t* clipMap;
 			clipMap_t* col_map_mp;
-			ComWorld* comWorld;
+			ComWorld* com_map;
 			// 			GameWorldSp *gameWorldSp;
 			GameWorldMp* gameWorldMp;
 			MapEnts* mapEnts;

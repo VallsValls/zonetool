@@ -94,9 +94,9 @@ namespace ZoneTool
 		IW4::VertexDecl* ITechset::dump_vertex_decl(const std::string& name, MaterialVertexDeclaration* vertex, ZoneMemory* mem)
 		{
 			// convert to IW4
-			const auto asset = mem->Alloc<IW4::VertexDecl>();
+			auto* asset = mem->Alloc<IW4::VertexDecl>();
 			
-			asset->name = mem->StrDup(name);
+			asset->name = mem->StrDup(va("iw3/%s", name.data()));
 
 			asset->hasOptionalSource = vertex->hasOptionalSource;
 			asset->streamCount = vertex->streamCount;
@@ -104,7 +104,7 @@ namespace ZoneTool
 			memcpy(asset->streams, vertex->routing.data, sizeof asset->streams);
 			memcpy(asset->declarations, vertex->routing.decl, sizeof(void*) * 16);
 
-			for (int i = 0; i < asset->streamCount; i++)
+			for (auto i = 0; i < asset->streamCount; i++)
 			{
 				if (asset->streams[i].dest >= 4)
 				{
@@ -127,9 +127,9 @@ namespace ZoneTool
 		IW4::VertexShader* ITechset::dump_vertex_shader(MaterialVertexShader* shader, ZoneMemory* mem)
 		{
 			// convert to IW4
-			const auto asset = mem->Alloc<IW4::VertexShader>();
+			auto* asset = mem->Alloc<IW4::VertexShader>();
 
-			asset->name = shader->name;
+			asset->name = mem->StrDup(va("iw3/%s", shader->name));
 			asset->shader = shader->prog.vs;
 			asset->codeLen = shader->prog.loadDef.programSize;
 			asset->bytecode = PDWORD(shader->prog.loadDef.program);
@@ -143,9 +143,9 @@ namespace ZoneTool
 		IW4::PixelShader* ITechset::dump_pixel_shader(MaterialPixelShader* shader, ZoneMemory* mem)
 		{
 			// convert to IW4
-			const auto asset = mem->Alloc<IW4::PixelShader>();
+			auto* asset = mem->Alloc<IW4::PixelShader>();
 
-			asset->name = shader->name;
+			asset->name = mem->StrDup(va("iw3/%s", shader->name));
 			asset->shader = shader->prog.ps;
 			asset->codeLen = shader->prog.loadDef.programSize;
 			asset->bytecode = PDWORD(shader->prog.loadDef.program);
@@ -199,7 +199,6 @@ namespace ZoneTool
 
 		std::unordered_map<std::int32_t, std::int32_t> iw3_code_const_map =
 		{
-			{IW3::CONST_SRC_CODE_MAYBE_DIRTY_PS_BEGIN, IW4::CONST_SRC_CODE_MAYBE_DIRTY_PS_BEGIN},
 			{IW3::CONST_SRC_CODE_LIGHT_POSITION, IW4::CONST_SRC_CODE_LIGHT_POSITION},
 			{IW3::CONST_SRC_CODE_LIGHT_DIFFUSE, IW4::CONST_SRC_CODE_LIGHT_DIFFUSE},
 			{IW3::CONST_SRC_CODE_LIGHT_SPECULAR, IW4::CONST_SRC_CODE_LIGHT_SPECULAR},
@@ -208,7 +207,7 @@ namespace ZoneTool
 			{IW3::CONST_SRC_CODE_NEARPLANE_ORG, IW4::CONST_SRC_CODE_NEARPLANE_ORG},
 			{IW3::CONST_SRC_CODE_NEARPLANE_DX, IW4::CONST_SRC_CODE_NEARPLANE_DX},
 			{IW3::CONST_SRC_CODE_NEARPLANE_DY, IW4::CONST_SRC_CODE_NEARPLANE_DY},
-			// { IW3::CONST_SRC_CODE_SHADOW_PARMS, IW4::CONST_SRC_CODE_SHADOW_PARAMS },
+
 			{IW3::CONST_SRC_CODE_SHADOWMAP_POLYGON_OFFSET, IW4::CONST_SRC_CODE_SHADOWMAP_POLYGON_OFFSET},
 			{IW3::CONST_SRC_CODE_RENDER_TARGET_SIZE, IW4::CONST_SRC_CODE_RENDER_TARGET_SIZE},
 			{IW3::CONST_SRC_CODE_LIGHT_FALLOFF_PLACEMENT, IW4::CONST_SRC_CODE_LIGHT_FALLOFF_PLACEMENT},
@@ -222,8 +221,7 @@ namespace ZoneTool
 			{IW3::CONST_SRC_CODE_DOF_ROW_DELTA, IW4::CONST_SRC_CODE_DOF_ROW_DELTA},
 			{IW3::CONST_SRC_CODE_PARTICLE_CLOUD_COLOR, IW4::CONST_SRC_CODE_PARTICLE_CLOUD_COLOR},
 			{IW3::CONST_SRC_CODE_GAMETIME, IW4::CONST_SRC_CODE_GAMETIME},
-			{IW3::CONST_SRC_CODE_MAYBE_DIRTY_PS_END, IW4::CONST_SRC_CODE_MAYBE_DIRTY_PS_END},
-			{IW3::CONST_SRC_CODE_ALWAYS_DIRTY_PS_BEGIN, IW4::CONST_SRC_CODE_ALWAYS_DIRTY_PS_BEGIN},
+
 			{IW3::CONST_SRC_CODE_PIXEL_COST_FRACS, IW4::CONST_SRC_CODE_PIXEL_COST_FRACS},
 			{IW3::CONST_SRC_CODE_PIXEL_COST_DECODE, IW4::CONST_SRC_CODE_PIXEL_COST_DECODE},
 			{IW3::CONST_SRC_CODE_FILTER_TAP_0, IW4::CONST_SRC_CODE_FILTER_TAP_0},
@@ -237,8 +235,7 @@ namespace ZoneTool
 			{IW3::CONST_SRC_CODE_COLOR_MATRIX_R, IW4::CONST_SRC_CODE_COLOR_MATRIX_R},
 			{IW3::CONST_SRC_CODE_COLOR_MATRIX_G, IW4::CONST_SRC_CODE_COLOR_MATRIX_G},
 			{IW3::CONST_SRC_CODE_COLOR_MATRIX_B, IW4::CONST_SRC_CODE_COLOR_MATRIX_B},
-			{IW3::CONST_SRC_CODE_ALWAYS_DIRTY_PS_END, IW4::CONST_SRC_CODE_ALWAYS_DIRTY_PS_END},
-			// { IW3::CONST_SRC_CODE_NEVER_DIRTY_PS_BEGIN, IW4::CONST_SRC_CODE_ },
+
 			{IW3::CONST_SRC_CODE_SHADOWMAP_SWITCH_PARTITION, IW4::CONST_SRC_CODE_SHADOWMAP_SWITCH_PARTITION},
 			{IW3::CONST_SRC_CODE_SHADOWMAP_SCALE, IW4::CONST_SRC_CODE_SHADOWMAP_SCALE},
 			{IW3::CONST_SRC_CODE_ZNEAR, IW4::CONST_SRC_CODE_ZNEAR},
@@ -266,7 +263,7 @@ namespace ZoneTool
 			{IW3::CONST_SRC_CODE_CODE_MESH_ARG_1, IW4::CONST_SRC_CODE_CODE_MESH_ARG_1},
 			{IW3::CONST_SRC_CODE_CODE_MESH_ARG_LAST, IW4::CONST_SRC_CODE_CODE_MESH_ARG_LAST},
 			{IW3::CONST_SRC_CODE_BASE_LIGHTING_COORDS, IW4::CONST_SRC_CODE_BASE_LIGHTING_COORDS},
-			// { IW3::CONST_SRC_CODE_NEVER_DIRTY_PS_END, IW4::CONST_SRC_CODE_NEVER_DIRTY_PS },
+
 			{IW3::CONST_SRC_CODE_COUNT_FLOAT4, IW4::CONST_SRC_CODE_COUNT_FLOAT4},
 			{IW3::CONST_SRC_FIRST_CODE_MATRIX, IW4::CONST_SRC_FIRST_CODE_MATRIX},
 			{IW3::CONST_SRC_CODE_WORLD_MATRIX, IW4::CONST_SRC_CODE_WORLD_MATRIX0},
@@ -334,8 +331,6 @@ namespace ZoneTool
 				IW3::CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX,
 				IW4::CONST_SRC_CODE_INVERSE_TRANSPOSE_WORLD_OUTDOOR_LOOKUP_MATRIX
 			},
-			{IW3::CONST_SRC_TOTAL_COUNT, IW4::CONST_SRC_TOTAL_COUNT},
-			{IW3::CONST_SRC_NONE, IW4::CONST_SRC_NONE},
 		};
 
 		void ITechset::dump_statebits(const std::string& techset, char* statebits)
@@ -365,22 +360,14 @@ namespace ZoneTool
 				}
 			}
 
-			//iw4_statebits[IW4::] = 0;
-			//iw4_statebits[0] = 0;
-			//iw4_statebits[0] = 0;
-			//iw4_statebits[0] = 0;
-			//iw4_statebits[0] = 0;
-			//iw4_statebits[0] = 0;
-
-			
 			IW4::ITechset::dump_statebits(techset, iw4_statebits);
 		}
 		
 		void ITechset::dump(MaterialTechniqueSet* asset, ZoneMemory* mem)
 		{
-			auto iw4_techset = mem->Alloc<IW4::MaterialTechniqueSet>();
+			auto* iw4_techset = mem->Alloc<IW4::MaterialTechniqueSet>();
 
-			iw4_techset->name = asset->name;
+			iw4_techset->name = mem->StrDup(va("iw3/%s", asset->name));
 			iw4_techset->pad = asset->pad;
 			
 			for (int i = 0; i < 34; i++)
@@ -391,9 +378,8 @@ namespace ZoneTool
 					if (asset->techniques[i] && itr->second >= 0)
 					{
 						const auto size = sizeof(IW4::MaterialTechniqueHeader) + (sizeof(IW4::MaterialPass) * asset->techniques[i]->hdr.numPasses);
-						iw4_techset->techniques[itr->second] = reinterpret_cast<IW4::MaterialTechnique*>(
-							new char[size]);
-
+						iw4_techset->techniques[itr->second] = mem->ManualAlloc<IW4::MaterialTechnique>(size);
+						
 						if (itr->second >= 5 && itr->second <= 36)
 						{
 							iw4_techset->techniques[itr->second + 1] = iw4_techset->techniques[itr->second];
@@ -403,12 +389,20 @@ namespace ZoneTool
 
 						auto& iw3_technique = asset->techniques[i];
 						auto& technique = iw4_techset->techniques[itr->second];
-						
-						for (short pass = 0; pass < technique->hdr.numPasses; pass++)
-						{
-							const auto iw3_pass_def = &iw3_technique->pass[pass];
-							const auto pass_def = &technique->pass[pass];
 
+						technique->hdr.name = mem->StrDup(va("iw3/%s", technique->hdr.name));
+
+						if ((technique->hdr.flags & 0x10) == 0x10)
+						{
+							technique->hdr.flags &= ~0x10;
+							technique->hdr.flags |= 0x40;
+						}
+						
+						for (short pass = 0; pass < technique->hdr.passCount; pass++)
+						{
+							auto* iw3_pass_def = &iw3_technique->pass[pass];
+							auto* pass_def = &technique->pass[pass];
+							
 							auto vertex_decl_name = GenerateNameForVertexDecl(iw3_pass_def->vertexDecl);
 
 							if (iw3_pass_def->pixelShader) pass_def->pixelShader = dump_pixel_shader(iw3_pass_def->pixelShader, mem);
@@ -424,12 +418,23 @@ namespace ZoneTool
 							
 							for (auto arg = 0; arg < pass_def->perPrimArgCount + pass_def->perObjArgCount + pass_def->stableArgCount; arg++)
 							{
-								const auto arg_def = &pass_def->argumentDef[arg];
+								auto* arg_def = &pass_def->argumentDef[arg];
 								if (arg_def->type == 3 || arg_def->type == 5)
 								{
 									if (iw3_code_const_map.find(arg_def->u.codeConst.index) != iw3_code_const_map.end())
 									{
 										arg_def->u.codeConst.index = iw3_code_const_map[arg_def->u.codeConst.index];
+									}
+									else
+									{
+										if (IsDebuggerPresent())
+										{
+											__debugbreak();
+										}
+										else
+										{
+											ZONETOOL_WARNING("Missing const mapping for constant %u!", arg_def->u.codeConst.index);
+										}
 									}
 								}
 							}

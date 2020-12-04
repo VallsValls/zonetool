@@ -631,9 +631,9 @@ namespace ZoneTool
 #pragma pack(pop)
 		struct MaterialTechniqueHeader
 		{
-			char* name;
-			short unk;
-			short numPasses;
+			const char* name;
+			unsigned __int16 flags;
+			unsigned __int16 passCount;
 		};
 
 		struct MaterialTechnique

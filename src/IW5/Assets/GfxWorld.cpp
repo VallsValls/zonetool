@@ -136,7 +136,7 @@ namespace ZoneTool
 			memcpy(&asset->worldDraw, worldDraw, sizeof GfxWorldDraw);
 
 			asset->worldDraw.reflectionImages = mem->Alloc<GfxImage*>(asset->worldDraw.reflectionProbeCount);
-			// new GfxImage*[asset->worldDraw.reflectionProbeCount];
+			// new GfxImage*[asset->draw.reflectionProbeCount];
 			memset(asset->worldDraw.reflectionImages, 0, sizeof(GfxImage*) * asset->worldDraw.reflectionProbeCount);
 
 			for (unsigned int i = 0; i < asset->worldDraw.reflectionProbeCount; i++)
@@ -926,8 +926,6 @@ namespace ZoneTool
 				ZoneBuffer::clear_pointer(&dest->dpvs.smodelInsts);
 			}
 
-			data->models->surfaceCount;
-
 			if (data->dpvs.surfaces)
 			{
 				buf->align(3);
@@ -1170,7 +1168,7 @@ namespace ZoneTool
 				write.dump_array(asset->cells[i].reflectionProbeReferences, asset->cells[i].reflectionProbeReferenceCount);
 			}
 
-			// worldDraw
+			// draw
 			write.dump_array(&asset->worldDraw, 1);
 
 			for (unsigned int i = 0; i < asset->worldDraw.reflectionProbeCount; i++)

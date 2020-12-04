@@ -6,17 +6,13 @@
 // Author: RektInator (https://github.com/RektInator)
 // License: GNU GPL v3.0
 // ========================================================
-#pragma once
+#include "stdafx.hpp"
+#include "IW4/Assets/ComWorld.hpp"
 
-namespace ZoneTool
+namespace ZoneTool::IW3
 {
-	namespace IW3
+	void IComWorld::dump(ComWorld* asset, [[maybe_unused]] ZoneMemory* mem)
 	{
-		class IGfxImage
-		{
-		public:
-			static IW4::GfxImage* GenerateIW4Image(GfxImage* image, ZoneMemory* mem);
-			static void dump(GfxImage* asset, ZoneMemory* mem);
-		};
+		IW4::IComWorld::dump(reinterpret_cast<IW4::ComWorld*>(asset));
 	}
 }

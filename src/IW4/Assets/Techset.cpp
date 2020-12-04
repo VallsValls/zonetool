@@ -196,12 +196,12 @@ namespace ZoneTool
 
 				if (iw5_techset->techniques[i])
 				{
-					const auto technique_size = sizeof(MaterialTechnique) + (sizeof(MaterialPass) * iw5_techset->techniques[i]->hdr.numPasses);
+					const auto technique_size = sizeof(MaterialTechnique) + (sizeof(MaterialPass) * iw5_techset->techniques[i]->hdr.passCount);
 					asset->techniques[dest_index] = mem->ManualAlloc<MaterialTechnique>(technique_size);
 					memcpy(asset->techniques[dest_index], iw5_techset->techniques[i], technique_size);
 					
 					auto& technique = asset->techniques[dest_index];
-					for (short pass = 0; pass < technique->hdr.numPasses; pass++)
+					for (short pass = 0; pass < technique->hdr.passCount; pass++)
 					{
 						auto* pass_def = &technique->pass[pass];
 
@@ -282,7 +282,7 @@ namespace ZoneTool
 			{
 				if (data->techniques[technique])
 				{
-					for (auto pass = 0; pass < data->techniques[technique]->hdr.numPasses; pass++)
+					for (auto pass = 0; pass < data->techniques[technique]->hdr.passCount; pass++)
 					{
 						auto& techniquePass = data->techniques[technique]->pass[pass];
 
@@ -334,9 +334,9 @@ namespace ZoneTool
 				buf->align(3);
 
 				auto* technique_header = buf->write(&data->techniques[technique]->hdr);
-				auto* technique_passes = buf->write(data->techniques[technique]->pass, technique_header->numPasses);
+				auto* technique_passes = buf->write(data->techniques[technique]->pass, technique_header->passCount);
 
-				for (std::int32_t pass = 0; pass < technique_header->numPasses; pass++)
+				for (std::int32_t pass = 0; pass < technique_header->passCount; pass++)
 				{
 					if (technique_passes[pass].vertexDecl)
 					{
@@ -506,14 +506,14 @@ namespace ZoneTool
 
 				if (asset->techniques[i])
 				{
-					const auto size = sizeof IW5::MaterialTechniqueHeader + (sizeof(MaterialPass) * asset->techniques[i]->hdr.numPasses);
+					const auto size = sizeof IW5::MaterialTechniqueHeader + (sizeof(MaterialPass) * asset->techniques[i]->hdr.passCount);
 					iw5_techset->techniques[dest_index] = reinterpret_cast<IW5::MaterialTechnique*>(
 						new char[size]);
 
 					memcpy(iw5_techset->techniques[dest_index], asset->techniques[i], size);
 					
 					auto& technique = iw5_techset->techniques[dest_index];
-					for (short pass = 0; pass < technique->hdr.numPasses; pass++)
+					for (short pass = 0; pass < technique->hdr.passCount; pass++)
 					{
 						const auto pass_def = &technique->pass[pass];
 
@@ -579,7 +579,7 @@ namespace ZoneTool
 
 				if (iw5_techset->techniques[i])
 				{
-					for (short pass = 0; pass < iw5_techset->techniques[i]->hdr.numPasses; pass++)
+					for (short pass = 0; pass < iw5_techset->techniques[i]->hdr.passCount; pass++)
 					{
 						delete iw5_techset->techniques[i]->pass[pass].argumentDef;
 					}

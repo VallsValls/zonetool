@@ -37,11 +37,11 @@ namespace ZoneTool
 
 			header->name = reader.read_string();
 
-			const auto asset = mem->ManualAlloc<MaterialTechnique>(sizeof(MaterialTechniqueHeader) + (sizeof(MaterialPass) * header->numPasses));
+			const auto asset = mem->ManualAlloc<MaterialTechnique>(sizeof(MaterialTechniqueHeader) + (sizeof(MaterialPass) * header->passCount));
 			memcpy(&asset->hdr, header, sizeof MaterialTechniqueHeader);
-			memcpy(asset->pass, passes, sizeof(MaterialPass) * header->numPasses);
+			memcpy(asset->pass, passes, sizeof(MaterialPass) * header->passCount);
 
-			for (short i = 0; i < header->numPasses; i++)
+			for (short i = 0; i < header->passCount; i++)
 			{
 				if (asset->pass[i].pixelShader)
 				{
@@ -143,7 +143,7 @@ namespace ZoneTool
 				if (data->techniques[technique])
 				{
 					for (std::int32_t pass = 0; pass < data->techniques[technique]
-					                                   ->hdr.numPasses; pass++)
+					                                   ->hdr.passCount; pass++)
 					{
 						auto& techniquePass = data->techniques[technique]->pass[pass];
 
@@ -179,17 +179,25 @@ namespace ZoneTool
 
 		void ITechset::write(IZone* zone, ZoneBuffer* buf)
 		{
-			auto data = this->asset_;
-			auto dest = buf->write(data);
+			auto* data = this->asset_;
+			auto* dest = buf->write(data);
 
 			buf->push_stream(3);
 			START_LOG_STREAM;
 
 			dest->name = buf->write_str(this->name());
-
 			dest->remappedTechniques = nullptr;
 
-			for (std::int32_t technique = 0; technique < 54; technique++)
+//#ifdef DEBUG
+//			if (IsDebuggerPresent() && data->techniques[5] == nullptr && data->techniques[9] == nullptr)
+//			{
+//				__debugbreak();
+//			}
+//#endif
+//			
+//			assert(data->techniques[5] != nullptr || data->techniques[9] != nullptr);
+			
+			for (auto technique = 0; technique < 54; technique++)
 			{
 				if (!data->techniques[technique])
 				{
@@ -198,52 +206,47 @@ namespace ZoneTool
 
 				buf->align(3);
 
-				auto techniqueHeader = buf->write(&data->techniques[technique]->hdr);
-				auto techniquePasses = buf->write(
-					data->techniques[technique]->pass, techniqueHeader->numPasses);
+				auto* technique_header = buf->write(&data->techniques[technique]->hdr);
+				auto* technique_passes = buf->write(
+					data->techniques[technique]->pass, technique_header->passCount);
 
-				if (techniqueHeader->numPasses > 1)
+				for (auto pass = 0; pass < technique_header->passCount; pass++)
 				{
-					//					ZONETOOL_INFO("Technique %s has %u passes.", data->techniques[technique]->hdr.name, techniqueHeader->numPasses);
-				}
-
-				for (std::int32_t pass = 0; pass < techniqueHeader->numPasses; pass++)
-				{
-					if (techniquePasses[pass].vertexDecl)
+					if (technique_passes[pass].vertexDecl)
 					{
-						techniquePasses[pass].vertexDecl =
+						technique_passes[pass].vertexDecl =
 							reinterpret_cast<VertexDecl*>(zone->get_asset_pointer(
-								vertexdecl, techniquePasses[pass].vertexDecl->name));
+								vertexdecl, technique_passes[pass].vertexDecl->name));
 					}
 
-					if (techniquePasses[pass].vertexShader)
+					if (technique_passes[pass].vertexShader)
 					{
-						techniquePasses[pass].vertexShader =
+						technique_passes[pass].vertexShader =
 							reinterpret_cast<VertexShader*>(zone->get_asset_pointer(
-								vertexshader, techniquePasses[pass].vertexShader->name));
+								vertexshader, technique_passes[pass].vertexShader->name));
 					}
 
-					if (techniquePasses[pass].pixelShader)
+					if (technique_passes[pass].pixelShader)
 					{
-						techniquePasses[pass].pixelShader =
+						technique_passes[pass].pixelShader =
 							reinterpret_cast<PixelShader*>(zone->get_asset_pointer(
-								pixelshader, techniquePasses[pass].pixelShader->name));
+								pixelshader, technique_passes[pass].pixelShader->name));
 					}
 
-					if (techniquePasses[pass].argumentDef)
+					if (technique_passes[pass].argumentDef)
 					{
 						buf->align(3);
-						auto destArgs = buf->write(techniquePasses[pass].argumentDef,
-						                           techniquePasses[pass].perPrimArgCount +
-						                           techniquePasses[pass].perObjArgCount +
-						                           techniquePasses[pass].stableArgCount);
+						auto destArgs = buf->write(technique_passes[pass].argumentDef,
+						                           technique_passes[pass].perPrimArgCount +
+						                           technique_passes[pass].perObjArgCount +
+						                           technique_passes[pass].stableArgCount);
 
 						for (auto arg = 0; arg <
-						     techniquePasses[pass].perPrimArgCount +
-						     techniquePasses[pass].perObjArgCount +
-						     techniquePasses[pass].stableArgCount; arg++)
+						     technique_passes[pass].perPrimArgCount +
+						     technique_passes[pass].perObjArgCount +
+						     technique_passes[pass].stableArgCount; arg++)
 						{
-							auto curArg = &techniquePasses[pass].argumentDef[arg];
+							auto curArg = &technique_passes[pass].argumentDef[arg];
 
 							if (curArg->type == 1 || curArg->type == 8)
 							{
@@ -255,12 +258,12 @@ namespace ZoneTool
 							}
 						}
 
-						ZoneBuffer::clear_pointer(&techniquePasses[pass].argumentDef);
+						ZoneBuffer::clear_pointer(&technique_passes[pass].argumentDef);
 					}
 				}
 
-				buf->write_str(techniqueHeader->name);
-				ZoneBuffer::clear_pointer(&techniqueHeader->name);
+				buf->write_str(technique_header->name);
+				ZoneBuffer::clear_pointer(&technique_header->name);
 
 				ZoneBuffer::clear_pointer(&dest->techniques[technique]);
 			}
@@ -282,11 +285,11 @@ namespace ZoneTool
 			}
 
 			dumper.dump_single(&asset->hdr);
-			dumper.dump_array(asset->pass, asset->hdr.numPasses);
+			dumper.dump_array(asset->pass, asset->hdr.passCount);
 
 			dumper.dump_string(asset->hdr.name);
 			
-			for (short i = 0; i < asset->hdr.numPasses; i++)
+			for (short i = 0; i < asset->hdr.passCount; i++)
 			{
 				if (asset->pass[i].pixelShader)
 				{
@@ -367,7 +370,7 @@ namespace ZoneTool
 				auto technique = asset->techniques[i];
 
 				std::vector<nlohmann::json> pass_array;
-				for (int p = 0; p < technique->hdr.numPasses; p++)
+				for (int p = 0; p < technique->hdr.passCount; p++)
 				{
 					auto current_pass = &technique->pass[p];
 					nlohmann::json pass;
@@ -416,8 +419,8 @@ namespace ZoneTool
 				nlohmann::json json;
 				json["name"] = technique->hdr.name;
 				json["index"] = i;
-				json["flags"] = technique->hdr.unk;
-				json["numPasses"] = technique->hdr.numPasses;
+				json["flags"] = technique->hdr.flags;
+				json["passCount"] = technique->hdr.passCount;
 				json["pass"] = pass_array;
 				
 				auto meme = json.dump();

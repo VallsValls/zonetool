@@ -26,7 +26,7 @@ namespace ZoneTool
 			map.baseName = world->baseName;
 			map.planeCount = world->planeCount;
 			map.nodeCount = world->nodeCount;
-			map.indexCount = world->surfaceCount;
+			map.surfaceCount = world->surfaceCount;
 
 			map.skyCount = 1;
 			map.skies = &sky;
@@ -120,55 +120,53 @@ namespace ZoneTool
 				}
 			}
 
-			map.worldDraw.reflectionProbeCount = world->reflectionProbeCount;
-			map.worldDraw.reflectionProbeTextures = (IW4::GfxTexture*)world->reflectionProbeTextures;
-			map.worldDraw.lightmapCount = world->lightmapCount;
-			map.worldDraw.lightmaps = (IW4::GfxLightmapArray*)world->lightmaps;
-			map.worldDraw.lightmapPrimaryTextures = (IW4::GfxTexture*)world->lightmapPrimaryTextures;
-			map.worldDraw.lightmapSecondaryTextures = (IW4::GfxTexture*)world->lightmapSecondaryTextures;
-			map.worldDraw.skyImage = (IW4::GfxImage*)world->skyImage;
-			map.worldDraw.outdoorImage = (IW4::GfxImage*)world->outdoorImage;
-			map.worldDraw.vertexCount = world->vertexCount;
-			memcpy(&map.worldDraw.vd, &world->vd, sizeof world->vd);
-			map.worldDraw.vertexLayerDataSize = world->vertexLayerDataSize;
-			memcpy(&map.worldDraw.vld, &world->vld, sizeof world->vld);
-			map.worldDraw.indexCount = world->indexCount;
-			map.worldDraw.indices = world->indices;
+			map.draw.reflectionProbeCount = world->reflectionProbeCount;
+			map.draw.reflectionProbeTextures = (IW4::GfxTexture*)world->reflectionProbeTextures;
+			map.draw.lightmapCount = world->lightmapCount;
+			map.draw.lightmaps = mem->Alloc<IW4::GfxLightmapArray>(world->lightmapCount); // (IW4::GfxLightmapArray*)world->lightmaps;
+
+			for (auto i = 0; i < world->lightmapCount; i++)
+			{
+				if (world->lightmaps[i].primary)
+				{
+					IGfxImage::dump(world->lightmaps[i].primary, mem);
+					map.draw.lightmaps[i].primary = IGfxImage::GenerateIW4Image(world->lightmaps[i].primary, mem);
+				}
+
+				if (world->lightmaps[i].secondary)
+				{
+					IGfxImage::dump(world->lightmaps[i].secondary, mem);
+					map.draw.lightmaps[i].secondary = IGfxImage::GenerateIW4Image(world->lightmaps[i].secondary, mem);
+				}
+			}
+			
+			map.draw.lightmapPrimaryTextures = (IW4::GfxTexture*)world->lightmapPrimaryTextures;
+			map.draw.lightmapSecondaryTextures = (IW4::GfxTexture*)world->lightmapSecondaryTextures;
+			map.draw.skyImage = IGfxImage::GenerateIW4Image(world->skyImage, mem);
+			map.draw.outdoorImage = IGfxImage::GenerateIW4Image(world->outdoorImage, mem);
+			map.draw.vertexCount = world->vertexCount;
+			memcpy(&map.draw.vd, &world->vd, sizeof world->vd);
+			map.draw.vertexLayerDataSize = world->vertexLayerDataSize;
+			memcpy(&map.draw.vld, &world->vld, sizeof world->vld);
+			map.draw.indexCount = world->indexCount;
 
 			// Split reflection images and probes
 			if (world->reflectionProbes)
 			{
-				map.worldDraw.reflectionImages = mem->Alloc<IW4::GfxImage*>(world->reflectionProbeCount);
-				map.worldDraw.reflectionProbes = mem->Alloc<IW4::GfxReflectionProbe>(world->reflectionProbeCount);
+				map.draw.reflectionImages = mem->Alloc<IW4::GfxImage*>(world->reflectionProbeCount);
+				map.draw.reflectionProbes = mem->Alloc<IW4::GfxReflectionProbe>(world->reflectionProbeCount);
 
 				for (unsigned int i = 0; i < world->reflectionProbeCount; ++i)
 				{
-					map.worldDraw.reflectionImages[i] = (IW4::GfxImage*)world->reflectionProbes[i].reflectionImage;
-
-					std::memcpy(map.worldDraw.reflectionProbes[i].offset, world->reflectionProbes[i].origin, sizeof(map.worldDraw.reflectionProbes[i].offset));
+					map.draw.reflectionImages[i] = IGfxImage::GenerateIW4Image(world->reflectionProbes[i].reflectionImage, mem);
+					IGfxImage::dump(world->reflectionProbes[i].reflectionImage, mem);
+					
+					std::memcpy(map.draw.reflectionProbes[i].offset, world->reflectionProbes[i].origin, sizeof(map.draw.reflectionProbes[i].offset));
 				}
 			}
 
 			memcpy(&map.lightGrid, &world->lightGrid, sizeof world->lightGrid);
-			map.modelCount = world->modelCount;
-
-			if (world->models)
-			{
-				map.models = mem->Alloc<IW4::GfxBrushModel>(world->modelCount);
-
-				for (int i = 0; i < world->modelCount; ++i)
-				{
-					map.models[i].writable.bounds.compute(world->models[i].writable.mins, world->models[i].writable.maxs); // Irrelevant, runtime data
-					map.models[i].bounds.compute(world->models[i].bounds[0], world->models[i].bounds[1]); // Verified
-
-					float* halfSize = map.models[i].bounds.halfSize;
-					map.models[i].radius = std::sqrt(std::pow(halfSize[0], 2) + std::pow(halfSize[1], 2) + std::pow(halfSize[2], 2));
-
-					map.models[i].surfaceCount = world->models[i].surfaceCount;
-					map.models[i].startSurfIndex = world->models[i].startSurfIndex;
-					map.models[i].surfaceCountNoDecal = world->models[i].surfaceCountNoDecal;
-				}
-			}
+			
 			assert(sizeof IW3::GfxBrushModel == 56);
 			assert(sizeof IW4::GfxBrushModel == 60);
 
@@ -180,10 +178,12 @@ namespace ZoneTool
 			memcpy(&map.sun, &world->sun, sizeof world->sun);
 
 			std::memcpy(map.outdoorLookupMatrix, world->outdoorLookupMatrix, sizeof(map.outdoorLookupMatrix));
-			map.outdoorImage = (IW4::GfxImage*)world->outdoorImage;
+			map.outdoorImage = map.draw.outdoorImage; // (IW4::GfxImage*)world->outdoorImage;
+
+			IGfxImage::dump(world->outdoorImage, mem);
 
 			map.cellCasterBits[0] = world->cellCasterBits;
-			map.cellCasterBits[1] = world->cellCasterBits; // reinterpret_cast<unsigned int*>(1); // This mustn't be null!
+			map.cellCasterBits[1] = world->cellCasterBits; // This mustn't be null!
 
 			map.sceneDynModel = (IW4::GfxSceneDynModel*)world->sceneDynModel;
 			map.sceneDynBrush = (IW4::GfxSceneDynBrush*)world->sceneDynBrush;
@@ -237,13 +237,15 @@ namespace ZoneTool
 					map.dpvs.smodelInsts[i].lightingOrigin[2] = world->sun.sunFxPosition[2];
 				}
 			}
-
+			
 			if (world->dpvs.surfaces)
 			{
 				map.dpvs.surfaces = mem->Alloc<IW4::GfxSurface>(world->surfaceCount);
-				map.dpvs.cullGroups = mem->Alloc<IW4::GfxCullGroup>(world->surfaceCount);
+				map.dpvs.surfacesBounds = mem->Alloc<IW4::GfxCullGroup>(world->surfaceCount);
 
-				for (int i = 0; i < world->surfaceCount; ++i)
+				assert(sizeof(IW3::srfTriangles_t) == sizeof(IW4::srfTriangles_t));
+				
+				for (auto i = 0; i < world->surfaceCount; ++i)
 				{
 					std::memcpy(&map.dpvs.surfaces[i].tris, &world->dpvs.surfaces[i].tris, sizeof(IW4::srfTriangles_t));
 					map.dpvs.surfaces[i].material = (IW4::Material*)world->dpvs.surfaces[i].material;
@@ -252,7 +254,7 @@ namespace ZoneTool
 					map.dpvs.surfaces[i].primaryLightIndex = world->dpvs.surfaces[i].primaryLightIndex;
 					map.dpvs.surfaces[i].flags = world->dpvs.surfaces[i].flags;
 
-					map.dpvs.cullGroups[i].bounds.compute(world->dpvs.surfaces[i].bounds[0], world->dpvs.surfaces[i].bounds[1]); // Verified
+					map.dpvs.surfacesBounds[i].bounds.compute(world->dpvs.surfaces[i].bounds[0], world->dpvs.surfaces[i].bounds[1]); // Verified
 
 					assert(map.dpvs.surfaces[i].material != nullptr);
 				}
@@ -264,12 +266,9 @@ namespace ZoneTool
 
 				for (unsigned int i = 0; i < world->dpvs.smodelCount; ++i)
 				{
-					std::memcpy(map.dpvs.smodelDrawInsts[i].placement.origin, world->dpvs.smodelDrawInsts[i].placement.origin, sizeof(map.dpvs.smodelDrawInsts[i].placement.origin));
-					std::memcpy(map.dpvs.smodelDrawInsts[i].placement.axis, world->dpvs.smodelDrawInsts[i].placement.axis, sizeof(map.dpvs.smodelDrawInsts[i].placement.axis));
-
+					std::memcpy(&map.dpvs.smodelDrawInsts[i].placement, &world->dpvs.smodelDrawInsts[i].placement, sizeof(GfxPackedPlacement));
 					std::memcpy(map.dpvs.smodelDrawInsts[i].cacheId, world->dpvs.smodelDrawInsts[i].smodelCacheIndex, sizeof(map.dpvs.smodelDrawInsts[i].cacheId));
 
-					map.dpvs.smodelDrawInsts[i].placement.scale = world->dpvs.smodelDrawInsts[i].placement.scale;
 					map.dpvs.smodelDrawInsts[i].model = (IW4::XModel*)world->dpvs.smodelDrawInsts[i].model;
 					map.dpvs.smodelDrawInsts[i].cullDist = static_cast<unsigned short>(world->dpvs.smodelDrawInsts[i].cullDist);
 					map.dpvs.smodelDrawInsts[i].reflectionProbeIndex = world->dpvs.smodelDrawInsts[i].reflectionProbeIndex;
@@ -296,18 +295,53 @@ namespace ZoneTool
 			map.sortKeyEffectAuto = 0x30;
 			map.sortKeyDistortion = 0x2b;
 
-			int baseIndex = 0;
-			map.worldDraw.indices = mem->Alloc<unsigned short>(map.worldDraw.indexCount);
-			for (unsigned int i = 0; i < map.indexCount; ++i)
+			// sort models
+			map.modelCount = world->modelCount;
+			if (world->models)
 			{
-				std::memcpy(&map.worldDraw.indices[baseIndex], &world->indices[map.dpvs.surfaces[i].tris.baseIndex], map.dpvs.surfaces[i].tris.triCount * 6);
-				map.dpvs.surfaces[i].tris.baseIndex = baseIndex;
-				baseIndex += map.dpvs.surfaces[i].tris.triCount * 3;
-			}
+				map.models = mem->Alloc<IW4::GfxBrushModel>(world->modelCount);
 
-			if (baseIndex != map.worldDraw.indexCount)
+				std::vector<IW4::GfxBrushModel> models;
+				models.resize(world->modelCount);
+
+				for (auto i = 0; i < world->modelCount; ++i)
+				{
+					models[i].writable.bounds.compute(world->models[i].writable.mins, world->models[i].writable.maxs); // Irrelevant, runtime data
+					models[i].bounds.compute(world->models[i].bounds[0], world->models[i].bounds[1]); // Verified
+
+					auto* half_size = models[i].bounds.halfSize;
+					models[i].radius = std::sqrt(std::pow(half_size[0], 2) + std::pow(half_size[1], 2) + std::pow(half_size[2], 2));
+
+					models[i].surfaceCount = world->models[i].surfaceCount;
+					models[i].startSurfIndex = world->models[i].startSurfIndex;
+					models[i].surfaceCountNoDecal = world->models[i].surfaceCountNoDecal;
+				}
+
+				std::sort(models.begin(), models.end(), [](const IW4::GfxBrushModel& m1, const IW4::GfxBrushModel& m2)
+				{
+					return m1.startSurfIndex > m2.startSurfIndex;
+				});
+
+				std::memcpy(map.models, models.data(), sizeof(IW4::GfxBrushModel) * world->modelCount);
+			}
+			
+			// sort triangles & vertices
+			auto tri_index = 0;
+			map.draw.indices = mem->Alloc<unsigned short>(map.draw.indexCount);
+			
+			for (auto i = 0; i < map.surfaceCount; i++)
 			{
-				ZONETOOL_WARNING("Warning: Didn't sort all indicies for worldDraw");
+				auto* surface = &map.dpvs.surfaces[i];
+
+				// triangles
+				std::memcpy(&map.draw.indices[tri_index], &world->indices[surface->tris.baseIndex], surface->tris.triCount * 6);
+				surface->tris.baseIndex = tri_index;
+				tri_index += surface->tris.triCount * 3;
+			}
+			
+			if (tri_index != map.draw.indexCount)
+			{
+				ZONETOOL_WARNING("Warning: Didn't sort all indicies for draw");
 			}
 
 			// Specify that it's a custom map

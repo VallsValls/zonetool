@@ -215,9 +215,9 @@ namespace ZoneTool
 #pragma pack(pop)
 		struct MaterialTechniqueHeader
 		{
-			char* name;
-			short unk;
-			short numPasses;
+			const char* name;
+			unsigned __int16 flags;
+			unsigned __int16 passCount;
 		};
 
 		struct MaterialTechnique
@@ -2767,11 +2767,11 @@ namespace ZoneTool
 
 		struct srfTriangles_t
 		{
-			int vertexLayerData;
-			int firstVertex;
+			unsigned int vertexLayerData;
+			unsigned int firstVertex;
 			unsigned __int16 vertexCount;
 			unsigned __int16 triCount;
-			int baseIndex;
+			unsigned int baseIndex;
 		};
 
 		struct GfxSurface
@@ -2796,13 +2796,21 @@ namespace ZoneTool
 					float maxs[3];
 				};
 			};
-			//int surfaceCount;
-			//int startSurfIndex;
 		};
 
 		struct GfxDrawSurfFields
 		{
-			__int64 _bf0;
+			unsigned __int64 objectId : 16;
+			unsigned __int64 reflectionProbeIndex : 8;
+			unsigned __int64 hasGfxEntIndex : 1;
+			unsigned __int64 customIndex : 5;
+			unsigned __int64 materialSortedIndex : 12;
+			unsigned __int64 prepass : 2;
+			unsigned __int64 useHeroLighting : 1;
+			unsigned __int64 sceneLightIndex : 8;
+			unsigned __int64 surfType : 4;
+			unsigned __int64 primarySortKey : 6;
+			unsigned __int64 unused : 1;
 		};
 
 		union GfxDrawSurf
@@ -2810,6 +2818,7 @@ namespace ZoneTool
 			GfxDrawSurfFields fields;
 			unsigned __int64 packed;
 		};
+		static_assert(sizeof(GfxDrawSurf) == 8);
 
 #pragma pack(push, 4)
 		struct GfxPackedPlacement
@@ -2863,7 +2872,7 @@ namespace ZoneTool
 			unsigned __int16* sortedSurfIndex;
 			GfxStaticModelInst* smodelInsts;
 			GfxSurface* surfaces;
-			GfxCullGroup* cullGroups;
+			GfxCullGroup* surfacesBounds;
 			GfxStaticModelDrawInst* smodelDrawInsts;
 			GfxDrawSurf* surfaceMaterials;
 			unsigned int* surfaceCastsSunShadow;
@@ -2895,7 +2904,7 @@ namespace ZoneTool
 			const char* baseName; // 4
 			int planeCount; // 4
 			int nodeCount; // 4 // = 16
-			int indexCount; // 4
+			int surfaceCount; // 4
 			unsigned int skyCount; // 4
 			GfxSky* skies; // 4
 			int sunPrimaryLightIndex; // 4 // = 32
@@ -2908,7 +2917,7 @@ namespace ZoneTool
 			GfxCellTreeCount* aabbTreeCounts; // Size: 4 * dpvsPlanes.cellCount // 4
 			GfxCellTree* aabbTree; // 4
 			GfxCell* cells; // 4  // = 80
-			GfxWorldDraw worldDraw; // 72
+			GfxWorldDraw draw; // 72
 			GfxLightGrid lightGrid; // 56 // = 208
 			int modelCount; // 4
 			GfxBrushModel* models; // 4 // = 216

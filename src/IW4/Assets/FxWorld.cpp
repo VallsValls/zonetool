@@ -15,7 +15,7 @@ namespace ZoneTool
 	{
 		FxWorld* IFxWorld::parse(const std::string& name, ZoneMemory* mem)
 		{
-			auto iw5_fxworld = IW5::IFxWorld::parse(name, mem);
+			auto* iw5_fxworld = IW5::IFxWorld::parse(name, mem);
 
 			if (!iw5_fxworld)
 			{
@@ -23,7 +23,7 @@ namespace ZoneTool
 			}
 
 			// asset is actually the same so just cast
-			return (FxWorld*)iw5_fxworld;
+			return reinterpret_cast<FxWorld*>(iw5_fxworld);
 		}
 
 		void IFxWorld::init(const std::string& name, ZoneMemory* mem)
@@ -43,7 +43,7 @@ namespace ZoneTool
 
 		void IFxWorld::load_depending(IZone* zone)
 		{
-			auto data = this->asset_;
+			auto* data = this->asset_;
 			if (data->glassSys.defs)
 			{
 				for (unsigned int i = 0; i < data->glassSys.defCount; i++)
@@ -76,8 +76,8 @@ namespace ZoneTool
 
 		void IFxWorld::write(IZone* zone, ZoneBuffer* buf)
 		{			
-			auto data = this->asset_;
-			auto dest = buf->write(data);
+			auto* data = this->asset_;
+			auto* dest = buf->write(data);
 
 			buf->push_stream(3);
 			START_LOG_STREAM;
@@ -87,7 +87,7 @@ namespace ZoneTool
 			if (data->glassSys.defs)
 			{
 				buf->align(3);
-				auto glass_def = buf->write(data->glassSys.defs, data->glassSys.defCount);
+				auto* glass_def = buf->write(data->glassSys.defs, data->glassSys.defCount);
 
 				for (std::uint32_t i = 0; i < data->glassSys.defCount; i++)
 				{
@@ -199,37 +199,6 @@ namespace ZoneTool
 
 			END_LOG_STREAM;
 			buf->pop_stream();
-
-			if (zone->get_target() != zone_target::pc)
-			{
-				endian_convert(&dest->name);
-				endian_convert(&dest->glassSys.time);
-				endian_convert(&dest->glassSys.defCount);
-				endian_convert(&dest->glassSys.pieceLimit);
-				endian_convert(&dest->glassSys.pieceWordCount);
-				endian_convert(&dest->glassSys.initPieceCount);
-				endian_convert(&dest->glassSys.cellCount);
-				endian_convert(&dest->glassSys.activePieceCount);
-				endian_convert(&dest->glassSys.firstFreePiece);
-				endian_convert(&dest->glassSys.geoDataLimit);
-				endian_convert(&dest->glassSys.geoDataCount);
-				endian_convert(&dest->glassSys.initGeoDataCount);
-				endian_convert(&dest->glassSys.defs);
-				endian_convert(&dest->glassSys.piecePlaces);
-				endian_convert(&dest->glassSys.pieceStates);
-				endian_convert(&dest->glassSys.pieceDynamics);
-				endian_convert(&dest->glassSys.geoData);
-				endian_convert(&dest->glassSys.isInUse);
-				endian_convert(&dest->glassSys.cellBits);
-				endian_convert(&dest->glassSys.visData);
-				endian_convert(&dest->glassSys.linkOrg);
-				endian_convert(&dest->glassSys.halfThickness);
-				endian_convert(&dest->glassSys.lightingHandles);
-				endian_convert(&dest->glassSys.initPieceStates);
-				endian_convert(&dest->glassSys.initGeoData);
-				endian_convert(&dest->glassSys.effectChanceAccum);
-				endian_convert(&dest->glassSys.lastPieceDeletionTime);
-			}
 		}
 
 		void IFxWorld::dump(FxWorld* asset)

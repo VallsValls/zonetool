@@ -78,7 +78,7 @@ namespace ZoneTool
 		{
 			if (mat && mat->techniqueSet)
 			{
-				ITechset::dump_statebits(mat->techniqueSet->name, mat->stateBitsEntry);
+				ITechset::dump_statebits(va("iw3/%s", mat->techniqueSet->name), mat->stateBitsEntry);
 			}
 		}
 		
@@ -145,7 +145,7 @@ namespace ZoneTool
 
 				if (mat->techniqueSet)
 				{
-					MATERIAL_DUMP_STRING(techniqueSet->name);
+					matdata["techniqueSet->name"] = va("iw3/%s", mat->techniqueSet->name);
 				}
 
 				MATERIAL_DUMP_INT(gameFlags);

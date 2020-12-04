@@ -356,10 +356,35 @@ namespace ZoneTool
 
 			if (mat->techniqueSet)
 			{
-				auto statebits = ITechset::parse_statebits(mat->techniqueSet->name, mem);
+				auto* statebits = ITechset::parse_statebits(mat->techniqueSet->name, mem);
 				memcpy(mat->stateBitsEntry, statebits, sizeof mat->stateBitsEntry);
 			}
 
+			auto max_state_index = 0;
+			for (auto i = 0; i < 54; i++)
+			{
+				if (mat->stateBitsEntry[i] < 0)
+				{
+					continue;
+				}
+				
+				if (mat->stateBitsEntry[i] > max_state_index)
+				{
+					max_state_index = mat->stateBitsEntry[i];
+				}
+			}
+
+			if (max_state_index >= mat->stateBitsCount)
+			{
+				ZONETOOL_FATAL("Material %s is referencing more statebit entries than it has!", mat->name);
+			}
+			
+			if (max_state_index != mat->stateBitsCount - 1)
+			{
+				ZONETOOL_INFO("Material %s has %u statebits but only %u are used, removing unused statebits.", mat->name, mat->stateBitsCount, max_state_index + 1);
+				mat->stateBitsCount = max_state_index + 1;
+			}
+			
 			// why???
 			mat->NiceMemeIW = 0;
 

@@ -8,15 +8,11 @@
 // ========================================================
 #pragma once
 
-namespace ZoneTool
+namespace ZoneTool::IW3
 {
-	namespace IW3
+	class IComWorld
 	{
-		class IGfxImage
-		{
-		public:
-			static IW4::GfxImage* GenerateIW4Image(GfxImage* image, ZoneMemory* mem);
-			static void dump(GfxImage* asset, ZoneMemory* mem);
-		};
-	}
+	public:
+		static void dump(ComWorld* asset, ZoneMemory* mem);
+	};
 }

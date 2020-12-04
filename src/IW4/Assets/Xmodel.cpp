@@ -501,7 +501,7 @@ size(), asset->numSurfaces, asset->name);
 
 						auto* iw5_model = new IW5::XModel;
 						memcpy(iw5_model, new_model, sizeof XModel);
-						iw5_model->unk = 0;
+						iw5_model->flags = 0;
 
 						IW5::IXModel::dump(iw5_model, convertToString);
 
@@ -515,7 +515,7 @@ size(), asset->numSurfaces, asset->name);
 				{
 					auto* iw5_model = new IW5::XModel;
 					memcpy(iw5_model, new_model, sizeof XModel);
-					iw5_model->unk = 0;
+					iw5_model->flags = 0;
 					
 					IW5::IXModel::dump(iw5_model, convertToString);
 

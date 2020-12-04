@@ -40,7 +40,7 @@ namespace ZoneTool
 				}
 			}
 
-			return XAssetHeader(); // DB_FindXAssetHeader(type, name, unk);
+			return XAssetHeader(); // DB_FindXAssetHeader(type, name, flags);
 		}
 
 		void AssetHandler::AddXAsset(std::int32_t type, std::string name, void* pointer)

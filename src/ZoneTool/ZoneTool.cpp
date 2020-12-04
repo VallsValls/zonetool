@@ -370,8 +370,11 @@ namespace ZoneTool
 		VMProtectBeginUltra("CreateConsole");
 #endif
 
-		// Catch exceptions
-		AddVectoredExceptionHandler(TRUE, exception_handler);
+		if (!IsDebuggerPresent())
+		{
+			// Catch exceptions
+			AddVectoredExceptionHandler(TRUE, exception_handler);
+		}
 		
 		// Allocate console
 		AllocConsole();

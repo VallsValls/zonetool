@@ -660,7 +660,7 @@ colmap->dynEntDefList[_num1][_num2]._item = newEntDef[_num2]._item;
 				for (std::int32_t i = 0; i < data->numCModels; i++)
 				{
 					buf->push_stream(0);
-
+					
 					if (data->cModels[i].info)
 					{
 						ClipInfo* destInfo = nullptr;

@@ -48,8 +48,13 @@ namespace ZoneTool
 
 			iw4_clipmap->numCBrushSides = (int)asset->numBrushSides;
 			iw4_clipmap->cBrushSides = mem->Alloc<IW4::cbrushside_t>(iw4_clipmap->numCBrushSides);
+
+			std::unordered_map<cbrushside_t*, IW4::cbrushside_t*> mapped_brush_sides;
+			
 			for (unsigned int i = 0; i < asset->numBrushSides; ++i)
 			{
+				mapped_brush_sides[&asset->brushsides[i]] = &iw4_clipmap->cBrushSides[i];
+				
 				iw4_clipmap->cBrushSides[i].plane = (IW4::cplane_s*)asset->brushsides[i].plane;
 				iw4_clipmap->cBrushSides[i].materialNum = asset->brushsides[i].materialNum;
 				iw4_clipmap->cBrushSides[i].firstAdjacentSideOffset = (char)asset->brushsides[i].firstAdjacentSideOffset;
@@ -66,7 +71,7 @@ namespace ZoneTool
 			iw4_clipmap->cLeaf = mem->Alloc<IW4::cLeaf_t>(iw4_clipmap->numCLeaf);
 			for (unsigned int i = 0; i < asset->numLeafs; ++i)
 			{
-				std::memcpy(&iw4_clipmap->cLeaf[i], &asset->leafs[i], sizeof(IW4::cStaticModel_s));
+				std::memcpy(&iw4_clipmap->cLeaf[i], &asset->leafs[i], sizeof(IW4::cLeaf_t));
 				iw4_clipmap->cLeaf[i].bounds.compute();
 			}
 
@@ -128,7 +133,7 @@ namespace ZoneTool
 				            sizeof(iw4_clipmap->brushes[i].edgeCount));
 
 				iw4_clipmap->brushes[i].numsides = asset->brushes[i].numsides;
-				iw4_clipmap->brushes[i].sides = (IW4::cbrushside_t*)asset->brushes[i].sides;
+				iw4_clipmap->brushes[i].sides = mapped_brush_sides.find(asset->brushes[i].sides)->second;
 				iw4_clipmap->brushes[i].edge = asset->brushes[i].baseAdjacentSide;
 				iw4_clipmap->brushes[i].numsides = asset->brushes[i].numsides;
 

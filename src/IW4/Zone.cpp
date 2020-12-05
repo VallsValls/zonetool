@@ -27,6 +27,11 @@ namespace ZoneTool
 
 		void* Zone::get_asset_pointer(std::int32_t type, const std::string& name)
 		{
+			if (name.empty())
+			{
+				return nullptr;
+			}
+			
 			for (auto idx = 0u; idx < m_assets.size(); idx++)
 			{
 				if (m_assets[idx]->type() == type && m_assets[idx]->name() == name)
@@ -41,10 +46,11 @@ namespace ZoneTool
 
 		void Zone::add_asset_of_type_by_pointer(std::int32_t type, void* pointer)
 		{
-#ifdef USE_VMPROTECT
-			VMProtectBeginUltra("IW4::Zone::AddAssetOfTypePtr");
-#endif
-
+			if (!pointer)
+			{
+				return;
+			}
+			
 			// don't add asset if it already exists
 			for (std::size_t idx = 0; idx < m_assets.size(); idx++)
 			{
@@ -67,18 +73,15 @@ namespace ZoneTool
 			DECLARE_ASSET(xmodelsurfs, IXSurface);
 			DECLARE_ASSET(image, IGfxImage);
 			DECLARE_ASSET(localize, ILocalizeEntry);
-
-#ifdef USE_VMPROTECT
-			VMProtectEnd();
-#endif
 		}
 
 		void Zone::add_asset_of_type(std::int32_t type, const std::string& name)
 		{
-#ifdef USE_VMPROTECT
-			VMProtectBeginUltra("IW4::Zone::AddAssetOfType");
-#endif
-
+			if (name.empty())
+			{
+				return;
+			}
+			
 			// don't add asset if it already exists
 			if (get_asset_pointer(type, name))
 			{
@@ -125,10 +128,6 @@ namespace ZoneTool
 			DECLARE_ASSET(lightdef, ILightDef);
 			DECLARE_ASSET(structureddatadef, IStructuredDataDef);
 			DECLARE_ASSET(addon_map_ents, IAddonMapEnts);
-
-#ifdef USE_VMPROTECT
-			VMProtectEnd();
-#endif
 		}
 
 		void Zone::add_asset_of_type(const std::string& type, const std::string& name)

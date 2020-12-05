@@ -19,13 +19,13 @@ namespace ZoneTool
 		{
 			if (FileSystem::FileExists(name))
 			{
-				auto rawfile = mem->Alloc<RawFile>();
+				auto* rawfile = mem->Alloc<RawFile>();
 				rawfile->name = mem->StrDup(name);
 
-				auto file = FileSystem::FileOpen(name, "rb"s);
+				auto* file = FileSystem::FileOpen(name, "rb"s);
 				if (file)
 				{
-					auto size = FileSystem::FileSize(file);
+					const auto size = FileSystem::FileSize(file);
 					auto data = FileSystem::ReadBytes(file, size);
 
 					ZoneBuffer buf(data);
@@ -41,12 +41,6 @@ namespace ZoneTool
 
 					FileSystem::FileClose(file);
 				}
-				else
-				{
-					rawfile->buffer = ZONETOOL_BRANDING;
-					rawfile->compressedLen = strlen(ZONETOOL_BRANDING);
-					rawfile->len = strlen(ZONETOOL_BRANDING);
-				}
 
 				return rawfile;
 			}
@@ -59,7 +53,14 @@ namespace ZoneTool
 			this->name_ = name;
 			this->asset_ = parse(name, mem);
 
-			if (!this->asset_)
+			if (name == FileSystem::GetFastFile())
+			{
+				this->asset_ = mem->Alloc<RawFile>();
+				this->asset_->name = mem->StrDup(name);
+				this->asset_->buffer = mem->StrDup(ZONETOOL_BRANDING);
+				this->asset_->len = strlen(this->asset_->buffer);
+			}
+			else if (!this->asset_)
 			{
 				this->asset_ = DB_FindXAssetHeader(this->type(), this->name_.data(), 1).rawfile;
 			}
@@ -85,8 +86,8 @@ namespace ZoneTool
 
 		void IRawFile::write(IZone* zone, ZoneBuffer* buf)
 		{
-			const auto data = this->asset_;
-			auto dest = buf->write<RawFile>(data);
+			auto* data = this->asset_;
+			auto* dest = buf->write<RawFile>(data);
 
 			buf->push_stream(3);
 			START_LOG_STREAM;
@@ -96,7 +97,7 @@ namespace ZoneTool
 			if (data->buffer)
 			{
 				buf->align(0);
-				buf->write(data->buffer, data->compressedLen);
+				buf->write(data->buffer, data->compressedLen ? data->compressedLen : data->len + 1);
 				ZoneBuffer::clear_pointer(&dest->buffer);
 			}
 

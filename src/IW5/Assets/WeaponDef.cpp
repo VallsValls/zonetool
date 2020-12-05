@@ -1597,6 +1597,15 @@ namespace ZoneTool
 		data[#__field__][idx##__field__] = asset->__field__[idx##__field__]; \
 	}
 
+#define WEAPON_DUMP_FIELD_ARR_STR(__field__, __size__) \
+	for (auto idx##__field__ = 0; idx##__field__ < __size__; idx##__field__++) \
+	{ \
+		if (asset->__field__[idx##__field__] != nullptr) \
+			data[#__field__][idx##__field__] = asset->__field__[idx##__field__]; \
+		else \
+			data[#__field__][idx##__field__] = ""; \
+	}
+
 #define WEAPON_DUMP_ASSET(__field__) \
 	if (asset->__field__) \
 	{ \
@@ -2015,7 +2024,7 @@ namespace ZoneTool
 			WEAPON_DUMP_FIELD(fHipViewScatterMax);
 			WEAPON_DUMP_FIELD(fightDist);
 			WEAPON_DUMP_FIELD(maxDist);
-			WEAPON_DUMP_FIELD_ARR(accuracyGraphName, 2);
+			WEAPON_DUMP_FIELD_ARR_STR(accuracyGraphName, 2);
 			// vec2_t* accuracyGraphKnots);
 			// vec2_t* originalAccuracyGraphKnots);
 			WEAPON_DUMP_FIELD(accuracyGraphKnotCount);

@@ -492,13 +492,11 @@ namespace ZoneTool
 			{
 				auto notetrack = data["notetrackSoundMapKeys"][i].get<std::string>();
 				weapon->notetrackSoundMapKeys[i] = SL_AllocString(notetrack);
-				ZONETOOL_INFO("notetrack %s %i", notetrack.data(), weapon->notetrackSoundMapKeys[i]);
 			}
 			for (int i = 0; i < 24; i++)
 			{
 				auto notetrack = data["notetrackSoundMapValues"][i].get<std::string>();
 				weapon->notetrackSoundMapValues[i] = SL_AllocString(notetrack);
-				ZONETOOL_INFO("notetrack %s %i", notetrack.data(), weapon->notetrackSoundMapValues[i]);
 			}
 
 			weapon->notetrackRumbleMapKeys = mem->Alloc<short>(16);
@@ -507,13 +505,11 @@ namespace ZoneTool
 			{
 				auto notetrack = data["notetrackRumbleMapKeys"][i].get<std::string>();
 				weapon->notetrackRumbleMapKeys[i] = SL_AllocString(notetrack);
-				ZONETOOL_INFO("notetrack %s %i", notetrack.data(), weapon->notetrackRumbleMapKeys[i]);
 			}
 			for (int i = 0; i < 16; i++)
 			{
 				auto notetrack = data["notetrackRumbleMapValues"][i].get<std::string>();
 				weapon->notetrackRumbleMapValues[i] = SL_AllocString(notetrack);
-				ZONETOOL_INFO("notetrack %s %i", notetrack.data(), weapon->notetrackRumbleMapValues[i]);
 			}
 
 			for (int i = 0; i < 48; i++)
@@ -1380,8 +1376,8 @@ namespace ZoneTool
 		
 		void IWeaponDef::write(IZone* zone, ZoneBuffer* buf)
 		{
-			auto data = this->asset_;
-			auto dest = buf->write(data);
+			auto* data = this->asset_;
+			auto* dest = buf->write(data);
 
 			buf->push_stream(3);
 			START_LOG_STREAM;

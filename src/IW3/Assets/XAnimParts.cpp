@@ -31,12 +31,19 @@ namespace ZoneTool
 
                 asset->flags = 0;
                 if (anim->bLoop)
-                    asset->flags |= IW4::ANIM_LOOP;
+                {
+					asset->flags |= IW4::ANIM_LOOP;
+                }
                 if (anim->bDelta)
-                    asset->flags |= IW4::ANIM_DELTA;
+                {
+					asset->flags |= IW4::ANIM_DELTA;
+                }
 
-				for (int i = 0; i < 10; i++)
+				for (auto i = 0; i < 10; i++)
+				{
 					XAE_CopyElement(boneCount[i]);
+				}
+
 				XAE_CopyElement(notifyCount);
 				XAE_CopyElement(assetType);
 				XAE_CopyElement(isDefault);
@@ -53,8 +60,14 @@ namespace ZoneTool
 				XAE_CopyElement(randomDataInt);
 				XAE_CopyElement(indices.data);
 				asset->notify = reinterpret_cast<IW4::XAnimNotifyInfo*>(anim->notify);
-				asset->delta = reinterpret_cast<IW4::XAnimDeltaPart*>(anim->delta);
 
+				if (anim->delta)
+				{
+					asset->delta = mem->Alloc<IW4::XAnimDeltaPart>();
+					asset->delta->quat = reinterpret_cast<IW4::XAnimDeltaPartQuat*>(anim->delta->quat);
+					asset->delta->trans = reinterpret_cast<IW4::XAnimPartTrans*>(anim->delta->trans);
+				}
+				
 				// dump asset
 				IW4::IXAnimParts::dump(asset, SL_ConvertToString);
 			}
